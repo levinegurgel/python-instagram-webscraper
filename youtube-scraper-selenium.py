@@ -11,12 +11,26 @@ driver = webdriver.Chrome(PATH)
 #panelaço
 driver.get("https://www.youtube.com/channel/UCmRFj7s3qBtadUujBd3Tujg")
 subscriberCount = driver.find_element_by_id('subscriber-count')
-print(subscriberCount.text)
+print('Número de inscritos: ' + subscriberCount.text.replace(' subscribers', ''))
 
-time.sleep(5)
-
+time.sleep(3)
+driver.execute_script("window.scrollTo(0, 1680)") 
+time.sleep(2)
 link = driver.find_element_by_link_text("Panelaço com João Gordo - Peixe de tofu com Mano Brown")
 link.click()
+
+try:
+    time.sleep(6)
+    skipButton = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "ytp-ad-skip-button"))
+    )
+finally:
+    time.sleep(6)
+    skipButton = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "ytp-ad-skip-button"))
+    )
+
+skipButton.click()
 
 view_num = WebDriverWait(driver, 5).until(
     EC.presence_of_element_located((By.CLASS_NAME, "view-count"))
@@ -24,19 +38,18 @@ view_num = WebDriverWait(driver, 5).until(
 
 print('Número de visualizações: ' + view_num.text.replace(' views', ''))
 
-driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+time.sleep(5)
+# driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+# driver.execute_script("window.scrollTo(0, 1680)") 
+# driver.sendKeys(Keys.PAGE_DOWN)
+html = driver.find_element_by_tag_name('html')
+html.send_keys(Keys.END)
 
-try:
-    element = WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "comment-section-header-renderer")))
-    for comment_num in driver.find_elements_by_class_name("comment-section-header-renderer"):
-        print('Número de comentários: ' + comment_num.text.replace(u'COMMENTS • ', ''))
-finally:
-    driver.quit()
+time.sleep(5)
 
-#Envios mais famosos
-# ytp-ad-skip-button ytp-button
-# print(driver.page_source)
+commentCount = WebDriverWait(driver, 10).until(
+    EC.presence_of_element_located((By.CLASS_NAME, "ytd-comments-header-renderer"))
+)
 
-
-# driver.quit()
+print('Número de comentários: ' + commentCount.text.replace(u'Comments', ''))
+driver.quit()
