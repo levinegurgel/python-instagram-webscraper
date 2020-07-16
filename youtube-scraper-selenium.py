@@ -4,6 +4,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import json
+
+data = {}
+data['youtube-scraper'] = []
 
 PATH = "/opt/chromedriver_linux64/chromedriver"
 driver = webdriver.Chrome(PATH)
@@ -11,7 +15,8 @@ driver = webdriver.Chrome(PATH)
 #panelaço
 driver.get("https://www.youtube.com/channel/UCmRFj7s3qBtadUujBd3Tujg")
 subscriberCount = driver.find_element_by_id('subscriber-count')
-print('Número de inscritos: ' + subscriberCount.text.replace(' subscribers', ''))
+subscriberCount = subscriberCount.text.replace(' subscribers', '')
+# print('Número de inscritos: ' + subscriberCount)
 
 time.sleep(3)
 driver.execute_script("window.scrollTo(0, 1680)") 
@@ -20,7 +25,7 @@ link = driver.find_element_by_link_text("Panelaço com João Gordo - Peixe de to
 link.click()
 
 try:
-    time.sleep(6)
+    time.sleep(5)
     skipButton = WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.CLASS_NAME, "ytp-ad-skip-button"))
     )
@@ -32,15 +37,16 @@ finally:
 
 skipButton.click()
 
-view_num = WebDriverWait(driver, 5).until(
+viewCount = WebDriverWait(driver, 5).until(
     EC.presence_of_element_located((By.CLASS_NAME, "view-count"))
 )
 
-print('Número de visualizações: ' + view_num.text.replace(' views', ''))
+viewCount = viewCount.text.replace(' views', '')
+
+# print('Número de visualizações: ' + viewCount)
 
 time.sleep(5)
 # driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
-# driver.execute_script("window.scrollTo(0, 1680)") 
 # driver.sendKeys(Keys.PAGE_DOWN)
 html = driver.find_element_by_tag_name('html')
 html.send_keys(Keys.END)
@@ -51,5 +57,16 @@ commentCount = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.CLASS_NAME, "ytd-comments-header-renderer"))
 )
 
-print('Número de comentários: ' + commentCount.text.replace(u'Comments', ''))
+commentCount = commentCount.text.replace(u' Comments\nSORT BY', '')
+
+data['youtube-scraper'].append({
+    'subscriber': subscriberCount,
+    'count-view': viewCount,
+    'coments': commentCount
+})
+
+print(data)
+with open('data.json', 'w') as outfile:
+    json.dump(data, outfile)
+
 driver.quit()
